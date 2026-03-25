@@ -1,0 +1,13 @@
+{
+    "id": "noir-luxury",
+    "name": "Noir Luxury",
+    "description": "A dark, ultra-luxury single-page real estate template with 360° virtual tour and gated price reveal.",
+    "category": "luxury",
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "previewUrl": "http://localhost:4321",
+    "previewImage": "/defaults/default-hero.jpg",
+    "version": "1.0.0",
+    "sectionCount": 8,
+    "previewRuntimeVersion": "1.0.0"
+}

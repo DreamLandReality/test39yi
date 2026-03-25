@@ -1,0 +1,72 @@
+---
+import { resolveIconPaths } from '../utils/icons';
+
+export interface Props {
+  data: {
+    headline: string;
+    subtext: string;
+    items: { icon: string; label: string; description: string }[];
+  };
+}
+
+const { data } = Astro.props;
+---
+
+<section class="py-24 bg-surface" data-dr-section="amenities" id="amenities">
+  <div class="max-w-7xl mx-auto px-8 md:px-12">
+
+    <!-- Header -->
+    <div class="text-center mb-16">
+      <p class="text-[10px] tracking-[0.5em] uppercase text-gold mb-4 font-sans">Lifestyle</p>
+      <h2
+        class="font-serif text-4xl md:text-5xl text-primary font-light mb-4"
+        data-dr-field="headline"
+        data-dr-style="headline"
+      >
+        {data.headline}
+      </h2>
+      <div class="w-10 h-[1px] bg-gold mx-auto mb-6"></div>
+      <p
+        class="text-muted text-sm leading-relaxed max-w-md mx-auto"
+        data-dr-field="subtext"
+        data-dr-style="subtext"
+      >
+        {data.subtext}
+      </p>
+    </div>
+
+    <!-- Amenities Grid -->
+    <ul
+      class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-border"
+      data-dr-list="items"
+    >
+      {data.items.map((item) => (
+        <li
+          class="bg-surface p-8 group hover:bg-background transition-colors duration-300 cursor-default"
+          data-dr-list-item
+        >
+          <div class="mb-5 inline-block group-hover:scale-110 transition-transform duration-300">
+            <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true" data-dr-field="icon">
+              {resolveIconPaths(item.icon).map((d) => (
+                <path stroke-linecap="round" stroke-linejoin="round" d={d} />
+              ))}
+            </svg>
+          </div>
+          <h3
+            class="text-primary text-[11px] font-medium tracking-[0.15em] uppercase mb-2 font-sans"
+            data-dr-field="label"
+          >
+            {item.label}
+          </h3>
+          <p
+            class="text-muted text-xs leading-relaxed"
+            data-dr-field="description"
+          >
+            {item.description}
+          </p>
+        </li>
+      ))}
+    </ul>
+
+  </div>
+</section>

@@ -1,0 +1,5 @@
+/*
+  Cache-Control: no-store
+
+/defaults/*
+  Cache-Control: public, max-age=600

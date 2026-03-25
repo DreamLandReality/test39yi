@@ -1,0 +1,350 @@
+---
+export interface Props {
+  data: {
+    previewState?: 'locked' | 'modal' | 'unlocked';
+    eyebrow?: string;
+    heading?: string;
+    priceLabel?: string;
+    price: string;
+    unlockButtonText?: string;
+    successNote?: string;
+    modalEyebrow?: string;
+    modalHeading?: string;
+    modalSubtext?: string;
+    modalSubmitText?: string;
+    submissionEndpoint?: string | null;
+    siteToken?: string | null;
+    brochureEyebrow?: string;
+    brochureDescription?: string;
+    brochureButtonText?: string;
+    brochureFile?: string;
+  };
+}
+
+const { data } = Astro.props;
+---
+
+<section
+  class="py-24 px-6 md:px-12 bg-background"
+  id="price-unlock"
+  data-dr-section="price-unlock"
+>
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-16">
+      {data.eyebrow && (
+        <p
+          class="text-[9px] tracking-[0.45em] uppercase text-gold mb-5"
+          data-dr-field="eyebrow"
+        >
+          {data.eyebrow}
+        </p>
+      )}
+      {data.heading && (
+        <h2
+          class="font-serif text-4xl md:text-5xl text-primary font-light"
+          data-dr-field="heading"
+        >
+          {data.heading}
+        </h2>
+      )}
+    </div>
+
+    <!-- Two-column card -->
+    <div class="grid grid-cols-1 md:grid-cols-2 border border-white/10">
+
+      <!-- Left: Price Unlock -->
+      <div class="min-h-[420px] p-12 md:p-16 flex flex-col items-center justify-center gap-8 border-b md:border-b-0 md:border-r border-white/10">
+
+        <p class="text-[9px] tracking-[0.4em] uppercase text-primary/40" data-dr-field="priceLabel">
+          {data.priceLabel || 'Starting From'}
+        </p>
+
+        <p
+          id="price-display"
+          class="font-serif text-4xl md:text-5xl text-primary transition-all duration-700"
+          style="filter: blur(14px); user-select: none; pointer-events: none;"
+          data-dr-field="price"
+          data-dr-effect-when="price-unlock.previewState=locked|price-unlock.previewState=modal"
+          data-dr-effect="filter:blur(14px);user-select:none;pointer-events:none"
+        >
+          {data.price}
+        </p>
+
+        <!-- Unlock button -->
+        <div
+          id="unlock-btn-wrapper"
+          style=""
+          data-dr-hide-when="price-unlock.previewState=unlocked|price-unlock.previewState=modal"
+        >
+          <button
+            id="unlock-price-btn"
+            class="flex items-center gap-3 px-8 py-4 border border-gold text-gold text-[10px] tracking-[0.3em] uppercase hover:bg-gold hover:text-background transition-all duration-300"
+            data-dr-field="unlockButtonText"
+          >
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            {data.unlockButtonText || 'Unlock Price'}
+          </button>
+        </div>
+
+        <!-- Success note -->
+        <div
+          id="price-success-wrapper"
+          class="text-center"
+          style="display: none;"
+          data-dr-show-when="price-unlock.previewState=unlocked"
+        >
+          <div class="w-8 h-px mx-auto mb-4" style="background: color-mix(in srgb, var(--accent), transparent 50%);"></div>
+          <p
+            class="text-primary/40 text-xs font-light leading-relaxed max-w-xs"
+            data-dr-field="successNote"
+          >
+            {data.successNote || 'Our advisory team will contact you shortly.'}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Right: Brochure -->
+      <div class="min-h-[420px] p-12 md:p-16 flex flex-col items-center justify-center gap-6 bg-surface">
+
+        <!-- Document icon -->
+        <div class="w-14 h-14 border border-white/15 flex items-center justify-center">
+          <svg class="w-6 h-6 text-primary/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+
+        <div class="text-center">
+          <p
+            class="text-[9px] tracking-[0.4em] uppercase text-primary/40 mb-3"
+            data-dr-field="brochureEyebrow"
+          >
+            {data.brochureEyebrow || 'Property Brochure'}
+          </p>
+          <p
+            class="font-serif text-xl text-primary font-light leading-snug"
+            data-dr-field="brochureDescription"
+          >
+            {data.brochureDescription || 'Detailed Specifications & Floor Plans'}
+          </p>
+        </div>
+
+        <a
+          href={data.brochureFile || '#'}
+          download={!!data.brochureFile}
+          class="flex items-center gap-3 px-10 py-4 bg-primary text-background text-[10px] tracking-[0.3em] uppercase hover:bg-gold hover:text-background transition-all duration-300 w-full justify-center mt-2"
+          data-dr-field="brochureButtonText"
+        >
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          {data.brochureButtonText || 'Download Brochure'}
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div
+    id="price-modal"
+    class="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex items-center justify-center p-4"
+    style="display: none;"
+    data-dr-show-when="price-unlock.previewState=modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="price-modal-heading"
+  >
+    <div class="bg-surface border border-white/10 p-10 md:p-16 max-w-lg w-full relative">
+
+      <button
+        id="price-modal-close"
+        class="absolute top-6 right-6 text-primary/40 hover:text-primary transition-colors duration-200"
+        aria-label="Close"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      {data.modalEyebrow && (
+        <p
+          class="text-[9px] tracking-[0.4em] uppercase text-gold mb-4"
+          data-dr-field="modalEyebrow"
+        >
+          {data.modalEyebrow}
+        </p>
+      )}
+
+      <h3
+        id="price-modal-heading"
+        class="font-serif text-3xl text-primary font-light mb-3"
+        data-dr-field="modalHeading"
+      >
+        {data.modalHeading || 'Unlock Pricing'}
+      </h3>
+
+      <p
+        class="text-primary/40 text-sm font-light mb-10 leading-relaxed"
+        data-dr-field="modalSubtext"
+      >
+        {data.modalSubtext || 'Provide your details to reveal exclusive pricing and floor layouts.'}
+      </p>
+
+      <form
+        id="unlock-form"
+        class="flex flex-col gap-6"
+        novalidate
+        data-endpoint={data.submissionEndpoint || undefined}
+        data-token={data.siteToken || undefined}
+      >
+        <div class="relative pt-5">
+          <input
+            required
+            type="text"
+            id="modal-name"
+            name="name"
+            class="peer w-full border-b border-white/20 py-2 text-sm text-primary outline-none focus:border-gold transition-colors bg-transparent placeholder-transparent"
+            placeholder=" "
+          />
+          <label for="modal-name" class="absolute left-0 top-5 text-sm text-primary/40 transition-all pointer-events-none peer-focus:top-0 peer-focus:text-[10px] peer-focus:text-gold peer-focus:uppercase peer-focus:tracking-widest peer-[&:not(:placeholder-shown)]:top-0 peer-[&:not(:placeholder-shown)]:text-[10px] peer-[&:not(:placeholder-shown)]:uppercase peer-[&:not(:placeholder-shown)]:tracking-widest">
+            Full Name
+          </label>
+        </div>
+
+        <div class="relative pt-5">
+          <input
+            required
+            type="email"
+            id="modal-email"
+            name="email"
+            class="peer w-full border-b border-white/20 py-2 text-sm text-primary outline-none focus:border-gold transition-colors bg-transparent placeholder-transparent"
+            placeholder=" "
+          />
+          <label for="modal-email" class="absolute left-0 top-5 text-sm text-primary/40 transition-all pointer-events-none peer-focus:top-0 peer-focus:text-[10px] peer-focus:text-gold peer-focus:uppercase peer-focus:tracking-widest peer-[&:not(:placeholder-shown)]:top-0 peer-[&:not(:placeholder-shown)]:text-[10px] peer-[&:not(:placeholder-shown)]:uppercase peer-[&:not(:placeholder-shown)]:tracking-widest">
+            Email Address
+          </label>
+        </div>
+
+        <div class="relative pt-5">
+          <input
+            type="tel"
+            id="modal-phone"
+            name="phone"
+            class="peer w-full border-b border-white/20 py-2 text-sm text-primary outline-none focus:border-gold transition-colors bg-transparent placeholder-transparent"
+            placeholder=" "
+          />
+          <label for="modal-phone" class="absolute left-0 top-5 text-sm text-primary/40 transition-all pointer-events-none peer-focus:top-0 peer-focus:text-[10px] peer-focus:text-gold peer-focus:uppercase peer-focus:tracking-widest peer-[&:not(:placeholder-shown)]:top-0 peer-[&:not(:placeholder-shown)]:text-[10px] peer-[&:not(:placeholder-shown)]:uppercase peer-[&:not(:placeholder-shown)]:tracking-widest">
+            Phone Number
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          class="bg-gold text-background py-4 text-[10px] font-medium tracking-[0.3em] uppercase mt-6 hover:bg-primary hover:text-background transition-colors duration-300 flex items-center justify-center gap-3 group"
+          data-dr-field="modalSubmitText"
+        >
+          {data.modalSubmitText || 'Reveal Price'}
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </button>
+      </form>
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
+
+  var unlockBtn = document.getElementById('unlock-price-btn');
+  var modal = document.getElementById('price-modal');
+  var modalClose = document.getElementById('price-modal-close');
+  var form = document.getElementById('unlock-form');
+  var priceDisplay = document.getElementById('price-display');
+  var unlockBtnWrapper = document.getElementById('unlock-btn-wrapper');
+  var successWrapper = document.getElementById('price-success-wrapper');
+
+  function openModal() {
+    if (isPreview) return;
+    if (modal) {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeModal() {
+    if (modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  }
+
+  function revealPrice() {
+    if (priceDisplay) {
+      priceDisplay.style.filter = '';
+      priceDisplay.style.pointerEvents = '';
+      priceDisplay.style.userSelect = '';
+    }
+    if (unlockBtnWrapper) unlockBtnWrapper.style.display = 'none';
+    if (successWrapper) successWrapper.style.display = '';
+    closeModal();
+  }
+
+  unlockBtn && unlockBtn.addEventListener('click', openModal);
+  modalClose && modalClose.addEventListener('click', closeModal);
+
+  modal && modal.addEventListener('click', function (e) {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal && modal.style.display === 'flex') closeModal();
+  });
+
+  if (!isPreview) {
+    form && form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var nameEl = form.querySelector('[name="name"]') as HTMLInputElement | null;
+      var emailEl = form.querySelector('[name="email"]') as HTMLInputElement | null;
+      var phoneEl = form.querySelector('[name="phone"]') as HTMLInputElement | null;
+      var name = nameEl ? nameEl.value.trim() : '';
+      var email = emailEl ? emailEl.value.trim() : '';
+
+      if (!name) {
+        if (nameEl) nameEl.style.borderColor = '#ef4444';
+        return;
+      }
+      if (!email || !email.includes('@')) {
+        if (emailEl) emailEl.style.borderColor = '#ef4444';
+        return;
+      }
+
+      revealPrice();
+
+      var endpoint = (form as HTMLFormElement).dataset.endpoint;
+      var token = (form as HTMLFormElement).dataset.token;
+      if (endpoint && token) {
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            siteToken: token,
+            name: name,
+            email: email,
+            phone: phoneEl ? phoneEl.value.trim() : '',
+            source_url: window.location.href,
+            form_type: 'price-unlock',
+          }),
+        }).catch(function () { /* non-fatal */ });
+      }
+    });
+  }
+})();
+</script>

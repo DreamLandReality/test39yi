@@ -1,0 +1,509 @@
+---
+export interface Props {
+  data: {
+    overline?: string;
+    headline: string;
+    subtext: string;
+    heroType: 'image' | 'carousel' | 'video';
+    backgroundImage: string;
+    images: { src: string; alt: string }[];
+    heroVideo?: string;
+    videoAutoplay?: boolean;
+    videoMuted?: boolean;
+    ctaText: string;
+    mobileLayout?: 'fullscreen' | 'portrait' | 'square' | 'auto';
+    overlayEnabled?: boolean;
+  };
+}
+
+const { data } = Astro.props;
+const imgSrc = (path: string) => path?.startsWith('http') ? path : `/${path}`;
+
+// Always prepare carousel images for pre-rendering
+const carouselImages = data.images?.length > 0
+  ? data.images
+  : [{ src: data.backgroundImage || 'defaults/default-hero.jpg', alt: 'Hero' }];
+
+const sideImages = carouselImages.slice(0, 4);
+const isCarousel = data.heroType === 'carousel';
+const isVideo = data.heroType === 'video';
+const isImage = data.heroType !== 'carousel' && data.heroType !== 'video';
+
+const mobileLayout = data.mobileLayout || 'fullscreen';
+
+const overlayEnabled = data.overlayEnabled !== false;
+---
+
+<section class="relative overflow-hidden" data-mobile-layout={mobileLayout} data-dr-section="hero" id="hero">
+
+  <!-- Hidden field so the runtime injector can update mobileLayout -->
+  <span data-dr-field="mobileLayout" style="display:none">{mobileLayout}</span>
+
+  <!-- ═══ Image Mode ═══ -->
+  <div
+    data-dr-show-when="hero.heroType=image"
+    style={isImage ? '' : 'display:none'}
+    class="absolute inset-0"
+    id="hero-image-mode"
+  >
+    <div class="hero-slide absolute inset-0" data-slide="0">
+      <img
+        src={imgSrc(data.backgroundImage || 'defaults/default-hero.jpg')}
+        alt="Hero"
+        class="w-full h-full object-cover"
+        data-dr-field="backgroundImage"
+      />
+    </div>
+  </div>
+
+  <!-- ═══ Carousel Mode ═══ -->
+  <div
+    data-dr-show-when="hero.heroType=carousel"
+    style={isCarousel ? '' : 'display:none'}
+    class="absolute inset-0"
+    id="hero-carousel-mode"
+  >
+    <div class="w-full h-full relative" data-dr-list="images">
+      {carouselImages.map((img, i) => (
+        <div
+          data-dr-list-item
+          data-dr-carousel-slide
+          class="absolute inset-0 transition-opacity duration-1000"
+          style={`opacity: ${i === 0 ? 1 : 0};`}
+        >
+          <img
+            src={imgSrc(img.src)}
+            alt={img.alt}
+            class="w-full h-full object-cover"
+            data-dr-field="src"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- ═══ Video Mode ═══ -->
+  <div
+    data-dr-show-when="hero.heroType=video"
+    style={isVideo ? '' : 'display:none'}
+    class="absolute inset-0"
+    id="hero-video-mode"
+  >
+    <!-- Video Loading Skeleton -->
+    <div
+      id="hero-video-skeleton"
+      class="absolute inset-0 bg-background flex items-center justify-center"
+    >
+      <div class="w-12 h-12 border-2 border-gold/30 border-t-gold rounded-full animate-spin"></div>
+    </div>
+    <!-- Video Element -->
+    <video
+      src={`/${data.heroVideo || 'defaults/demo-video.mp4'}`}
+      autoplay={data.videoAutoplay !== false}
+      muted={data.videoMuted !== false}
+      loop
+      playsinline
+      class="w-full h-full object-cover opacity-0 transition-opacity duration-500"
+      data-dr-field="heroVideo"
+      onloadeddata="this.style.opacity='1'; document.getElementById('hero-video-skeleton').style.display='none';"
+      oncanplay="this.style.opacity='1'; document.getElementById('hero-video-skeleton').style.display='none';"
+    />
+  </div>
+
+  <!-- Gradient Overlays -->
+  <div
+    class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/10 z-10 pointer-events-none"
+    style={!overlayEnabled ? 'display:none' : ''}
+    data-dr-show-when="hero.overlayEnabled=true"
+  ></div>
+  <div
+    class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 z-10 pointer-events-none"
+    style={!overlayEnabled ? 'display:none' : ''}
+    data-dr-show-when="hero.overlayEnabled=true"
+  ></div>
+
+  <!-- Main Content -->
+  <div class="relative z-20 h-full flex items-center hero-content-outer">
+    <div class="w-full max-w-7xl mx-auto px-8 md:px-12 flex items-center justify-between gap-12">
+
+      <!-- Left: Text Content -->
+      <div class="max-w-xl">
+        <p
+          class="text-[10px] tracking-[0.5em] uppercase mb-6 font-sans text-gold"
+          data-dr-field="overline"
+          data-dr-style="overline"
+        >
+          {data.overline || 'Luxury Residences'}
+        </p>
+        <h1
+          class="font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.05] text-primary mb-6 font-light"
+          data-dr-field="headline"
+          data-dr-style="headline"
+        >
+          {data.headline}
+        </h1>
+        <div class="w-10 h-[1px] bg-gold mb-8"></div>
+        <p
+          class="text-primary/50 text-sm md:text-base font-light leading-relaxed mb-12 max-w-sm"
+          data-dr-field="subtext"
+          data-dr-style="subtext"
+        >
+          {data.subtext}
+        </p>
+
+        <!-- CTA Button -->
+        <button
+          class="hero-cta inline-flex items-center gap-3 md:gap-4 bg-gold text-background text-[9px] md:text-[11px] tracking-[0.3em] uppercase px-5 py-3 md:px-8 md:py-4 hover:bg-primary hover:text-primary-foreground transition-all duration-300 font-medium"
+          data-cta-action="scroll"
+          data-cta-target="contact"
+          id="hero-cta-btn"
+        >
+          <span data-dr-field="ctaText" data-dr-style="ctaText">
+            {data.ctaText || 'Contact Us'}
+          </span>
+          <svg class="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Right: Side Thumbnails Strip (only visible in carousel mode) -->
+      <div
+        class="hidden lg:flex flex-col gap-3 flex-shrink-0"
+        id="side-thumbs"
+        data-dr-show-when="hero.heroType=carousel"
+        style={!isCarousel || sideImages.length <= 1 ? 'display: none !important;' : ''}
+      >
+        {sideImages.map((img, i) => (
+          <button
+            class="side-thumb-btn group relative w-[88px] h-[60px] overflow-hidden border-2 transition-all duration-300"
+            style={`border-color: ${i === 0 ? 'var(--accent)' : 'transparent'};`}
+            data-thumb={i}
+          >
+            <img
+              src={imgSrc(img.src)}
+              alt={img.alt}
+              class="w-full h-full object-cover transition-opacity duration-300"
+              style={`opacity: ${i === 0 ? 1 : 0.45};`}
+              draggable="false"
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom: Slide Indicators (only visible in carousel mode) -->
+  <div
+    class="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2"
+    id="hero-dots"
+    data-dr-show-when="hero.heroType=carousel"
+    style={!isCarousel || carouselImages.length <= 1 ? 'display: none !important;' : ''}
+  >
+    {carouselImages.map((_, i) => (
+      <button
+        data-dr-carousel-dot
+        class="h-[2px] transition-all duration-400"
+        style={`width: ${i === 0 ? '40px' : '16px'}; background: ${i === 0 ? 'var(--accent)' : 'rgba(255,255,255,0.3)'};`}
+      ></button>
+    ))}
+  </div>
+
+  <!-- Slide Counter (only visible in carousel mode) -->
+  <div
+    class="absolute bottom-10 right-8 md:right-12 z-20 font-sans text-[11px] tracking-[0.2em] text-primary/35 select-none"
+    data-dr-show-when="hero.heroType=carousel"
+    style={!isCarousel ? 'display:none' : ''}
+  >
+    <span id="hero-current">01</span>&thinsp;/&thinsp;<span id="hero-total">{String(carouselImages.length).padStart(2, '0')}</span>
+  </div>
+
+  <!-- Scroll Hint -->
+  <div class="absolute bottom-10 left-8 md:left-12 z-20 flex flex-col items-center gap-2 text-primary/30">
+    <div class="w-[1px] h-8 bg-current animate-pulse"></div>
+    <span class="text-[9px] tracking-[0.3em] uppercase font-sans">Scroll</span>
+  </div>
+
+</section>
+
+<style>
+  /* Mobile layout options — driven by data-mobile-layout attribute so JS can switch them at runtime */
+  [data-mobile-layout="fullscreen"] { height: 100vh; min-height: 600px; }
+
+  [data-mobile-layout="portrait"]   { aspect-ratio: 3/4; max-height: 100vh; }
+  @media (min-width: 768px) {
+    [data-mobile-layout="portrait"] { aspect-ratio: auto; height: 100vh; min-height: 600px; }
+  }
+
+  [data-mobile-layout="square"]     { aspect-ratio: 1/1; max-height: 100vh; }
+  @media (min-width: 768px) {
+    [data-mobile-layout="square"]   { aspect-ratio: auto; height: 100vh; min-height: 600px; }
+  }
+
+  [data-mobile-layout="auto"]       { min-height: 60vh; }
+  @media (min-width: 768px) {
+    [data-mobile-layout="auto"]     { height: 100vh; }
+  }
+
+  /* Preview-mode viewport overrides (data-dr-viewport set by runtime on viewport-change) */
+  html[data-dr-viewport="mobile"] [data-mobile-layout="portrait"]  { aspect-ratio: 3/4; max-height: 100vh; height: auto; min-height: auto; }
+  html[data-dr-viewport="mobile"] [data-mobile-layout="square"]    { aspect-ratio: 1/1; max-height: 100vh; height: auto; min-height: auto; }
+  html[data-dr-viewport="mobile"] [data-mobile-layout="auto"]      { min-height: 60vh; height: auto; }
+  html[data-dr-viewport="mobile"] [data-mobile-layout="fullscreen"] { height: 100vh; min-height: 600px; }
+
+  html[data-dr-viewport="tablet"] [data-mobile-layout="portrait"],
+  html[data-dr-viewport="desktop"] [data-mobile-layout="portrait"]  { aspect-ratio: auto; height: 100vh; min-height: 600px; }
+  html[data-dr-viewport="tablet"] [data-mobile-layout="square"],
+  html[data-dr-viewport="desktop"] [data-mobile-layout="square"]    { aspect-ratio: auto; height: 100vh; min-height: 600px; }
+  html[data-dr-viewport="tablet"] [data-mobile-layout="auto"],
+  html[data-dr-viewport="desktop"] [data-mobile-layout="auto"]      { height: 100vh; }
+
+  /* Content clears navbar — margin-top set dynamically by JS */
+  .hero-content-outer {
+    padding-bottom: 5rem;
+  }
+</style>
+
+<script>
+(function () {
+  var autoTimer: ReturnType<typeof setInterval> | null = null;
+
+  function initCarousel() {
+    var track = document.querySelector('[data-dr-list="images"]');
+    if (!track) return;
+
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+
+    var slides = Array.from(track.querySelectorAll('[data-dr-carousel-slide]'));
+    var counter = document.getElementById('hero-current');
+    var totalEl = document.getElementById('hero-total');
+
+    // ── Sync side thumbnails from current slide images ──
+    var thumbContainer = document.getElementById('side-thumbs');
+    var thumbBtns = Array.from(document.querySelectorAll('.side-thumb-btn'));
+    slides.forEach(function (slide, i) {
+      var slideImg = slide.querySelector('img');
+      if (i < thumbBtns.length) {
+        var thumbImg = thumbBtns[i].querySelector('img');
+        if (slideImg && thumbImg) {
+          (thumbImg as HTMLImageElement).src = slideImg.getAttribute('src') || '';
+          (thumbImg as HTMLImageElement).alt = slideImg.getAttribute('alt') || '';
+        }
+        (thumbBtns[i] as HTMLElement).style.display = '';
+      } else if (thumbContainer && slideImg && i < 4) {
+        // Create new thumbnail button if fewer than 4 exist
+        var btn = document.createElement('button');
+        btn.className = 'side-thumb-btn group relative w-[88px] h-[60px] overflow-hidden border-2 transition-all duration-300';
+        btn.style.borderColor = 'transparent';
+        btn.setAttribute('data-thumb', String(i));
+        var img = document.createElement('img');
+        img.src = slideImg.getAttribute('src') || '';
+        img.alt = slideImg.getAttribute('alt') || '';
+        img.className = 'w-full h-full object-cover transition-opacity duration-300';
+        img.style.opacity = '0.45';
+        img.draggable = false;
+        btn.appendChild(img);
+        thumbContainer.appendChild(btn);
+      }
+    });
+    // Hide excess thumbnails
+    for (var t = slides.length; t < thumbBtns.length; t++) {
+      (thumbBtns[t] as HTMLElement).style.display = 'none';
+    }
+    // Re-query after potential DOM changes
+    thumbBtns = Array.from(document.querySelectorAll('.side-thumb-btn'));
+
+    // Show/hide thumbnail container
+    if (thumbContainer) {
+      thumbContainer.style.display = slides.length <= 1 ? 'none' : '';
+    }
+
+    // ── Sync dot indicators ──
+    var dotsContainer = document.getElementById('hero-dots');
+    if (dotsContainer) {
+      var existingDots = Array.from(dotsContainer.querySelectorAll('[data-dr-carousel-dot]'));
+      // Add missing dots
+      while (existingDots.length < slides.length) {
+        var newDot = document.createElement('button');
+        newDot.setAttribute('data-dr-carousel-dot', '');
+        newDot.className = 'h-[2px] transition-all duration-400';
+        newDot.style.width = '16px';
+        newDot.style.background = 'rgba(255,255,255,0.3)';
+        dotsContainer.appendChild(newDot);
+        existingDots.push(newDot);
+      }
+      // Remove excess dots
+      while (existingDots.length > slides.length) {
+        var removeDot = existingDots.pop();
+        if (removeDot) removeDot.remove();
+      }
+      dotsContainer.style.display = slides.length <= 1 ? 'none !important' : '';
+    }
+    var dots = Array.from(document.querySelectorAll('[data-dr-carousel-dot]'));
+
+    if (slides.length <= 1) return;
+
+    var current = 0;
+    var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+
+    // Reset initial state: first slide visible, rest hidden
+    slides.forEach(function (slide, i) {
+      (slide as HTMLElement).style.opacity = i === 0 ? '1' : '0';
+    });
+    dots.forEach(function (dot, i) {
+      (dot as HTMLElement).style.width = i === 0 ? '40px' : '16px';
+      (dot as HTMLElement).style.background = i === 0 ? accentColor : 'rgba(255,255,255,0.3)';
+    });
+    thumbBtns.forEach(function (btn, i) {
+      (btn as HTMLElement).style.borderColor = i === 0 ? accentColor : 'transparent';
+      var img = btn.querySelector('img');
+      if (img) (img as HTMLElement).style.opacity = i === 0 ? '1' : '0.45';
+    });
+    if (totalEl) totalEl.textContent = String(slides.length).padStart(2, '0');
+    if (counter) counter.textContent = '01';
+
+    function setSlide(index: number) {
+      var prev = current;
+      current = ((index % slides.length) + slides.length) % slides.length;
+
+      (slides[prev] as HTMLElement).style.opacity = '0';
+      (slides[current] as HTMLElement).style.opacity = '1';
+
+      if (dots[prev]) { (dots[prev] as HTMLElement).style.width = '16px'; (dots[prev] as HTMLElement).style.background = 'rgba(255,255,255,0.3)'; }
+      if (dots[current]) { (dots[current] as HTMLElement).style.width = '40px'; (dots[current] as HTMLElement).style.background = accentColor; }
+
+      if (counter) counter.textContent = String(current + 1).padStart(2, '0');
+
+      thumbBtns.forEach(function (t, i) {
+        (t as HTMLElement).style.borderColor = i === current ? accentColor : 'transparent';
+        var img = t.querySelector('img');
+        if (img) (img as HTMLElement).style.opacity = i === current ? '1' : '0.45';
+      });
+    }
+
+    function startAuto() { autoTimer = setInterval(function () { setSlide(current + 1); }, 5000); }
+    function resetAuto() { if (autoTimer) clearInterval(autoTimer); startAuto(); }
+
+    dots.forEach(function (dot, i) {
+      dot.addEventListener('click', function () { setSlide(i); resetAuto(); });
+    });
+
+    thumbBtns.forEach(function (btn, i) {
+      btn.addEventListener('click', function () { setSlide(i % slides.length); resetAuto(); });
+    });
+
+    // Touch swipe
+    var touchStartX = 0;
+    var heroEl = document.querySelector('[data-dr-section="hero"]');
+    if (heroEl) {
+      heroEl.addEventListener('touchstart', function (e: TouchEvent) { touchStartX = e.touches[0].clientX; }, { passive: true });
+      heroEl.addEventListener('touchend', function (e: TouchEvent) {
+        var diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) { setSlide(diff > 0 ? current + 1 : current - 1); resetAuto(); }
+      }, { passive: true });
+    }
+
+    startAuto();
+  }
+
+  function initCta() {
+    var ctaBtn = document.getElementById('hero-cta-btn');
+    if (!ctaBtn) return;
+
+    ctaBtn.addEventListener('click', function () {
+      var action = ctaBtn!.getAttribute('data-cta-action');
+      var target = ctaBtn!.getAttribute('data-cta-target');
+
+      if (action === 'scroll' && target) {
+        var el = document.getElementById(target) || document.querySelector('[data-dr-section="' + target + '"]');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (action === 'modal') {
+        var modal = document.getElementById('contact-modal');
+        if (modal) modal.style.display = 'flex';
+      } else if (action === 'link' && target) {
+        window.open(target, '_blank', 'noopener,noreferrer');
+      } else if (action === 'phone' && target) {
+        var num = target.replace(/\s+/g, '');
+        window.location.href = 'tel:' + (num.startsWith('+') || num.startsWith('0') ? num : '+' + num);
+      } else if (action === 'download' && target) {
+        var a = document.createElement('a');
+        a.href = target;
+        a.download = '';
+        a.click();
+      }
+    });
+  }
+
+  // Re-init when runtime updates carousel images
+  document.addEventListener('dr:content-updated', function (e: any) {
+    if (e.detail && e.detail.sectionId === 'hero') {
+      requestAnimationFrame(initCarousel);
+    }
+  });
+
+  // Watch mobileLayout hidden field — when runtime injector updates it, apply to section
+  function initMobileLayoutObserver() {
+    var layoutField = document.querySelector('[data-dr-section="hero"] [data-dr-field="mobileLayout"]');
+    var sectionEl = document.querySelector('[data-dr-section="hero"]') as HTMLElement | null;
+    if (!layoutField || !sectionEl) return;
+
+    var VALID_LAYOUTS = ['fullscreen', 'portrait', 'square', 'auto'];
+    var observer = new MutationObserver(function () {
+      var val = (layoutField.textContent || '').trim();
+      if (VALID_LAYOUTS.includes(val)) {
+        sectionEl!.setAttribute('data-mobile-layout', val);
+      }
+    });
+    observer.observe(layoutField, { childList: true, characterData: true, subtree: true });
+  }
+
+  // Re-init carousel when mode switches make the carousel container visible
+  function observeCarouselVisibility() {
+    var carouselWrapper = document.querySelector('[data-dr-show-when="hero.heroType=carousel"]');
+    if (!carouselWrapper) return;
+
+    var observer = new MutationObserver(function () {
+      if ((carouselWrapper as HTMLElement).style.display !== 'none') {
+        requestAnimationFrame(initCarousel);
+      }
+    });
+    observer.observe(carouselWrapper, { attributes: true, attributeFilter: ['style'] });
+  }
+
+  // Dynamically measure navbar and apply margin-top to hero content
+  function syncNavbarSpacing() {
+    var nav = document.querySelector('.nav-bar') as HTMLElement | null;
+    var content = document.querySelector('[data-dr-section="hero"] .hero-content-outer') as HTMLElement | null;
+    if (!nav || !content) return;
+    var navH = nav.offsetHeight;
+    content.style.paddingTop = (navH + 16) + 'px';
+  }
+
+  function initNavbarObserver() {
+    syncNavbarSpacing();
+    window.addEventListener('resize', syncNavbarSpacing);
+    // Re-sync when nav transitions (transparent ↔ scrolled changes padding)
+    var nav = document.querySelector('.nav-bar');
+    if (nav) {
+      var obs = new MutationObserver(syncNavbarSpacing);
+      obs.observe(nav, { attributes: true, attributeFilter: ['class'] });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      initCarousel();
+      initCta();
+      observeCarouselVisibility();
+      initMobileLayoutObserver();
+      initNavbarObserver();
+    });
+  } else {
+    initCarousel();
+    initCta();
+    observeCarouselVisibility();
+    initMobileLayoutObserver();
+    initNavbarObserver();
+  }
+})();
+</script>

@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import Tour360 from '../components/Tour360.astro';
+import Amenities from '../components/Amenities.astro';
+import PriceUnlock from '../components/PriceUnlock.astro';
+import Testimonials from '../components/Testimonials.astro';
+import { getSectionData, isSectionEnabled } from '../lib/manifest-loader';
+
+const seoData = getSectionData('seo');
+const heroData = getSectionData('hero');
+const tour360Data = getSectionData('tour360');
+const amenitiesData = getSectionData('amenities');
+const priceUnlockData = getSectionData('price-unlock');
+const testimonialsData = getSectionData('testimonials');
+---
+
+<BaseLayout
+  title={seoData.title || 'Chamage — Luxury Residences'}
+  seo={seoData}
+  transparentNav={true}
+>
+  {isSectionEnabled('hero') && <Hero data={heroData} />}
+  {isSectionEnabled('tour360') && <Tour360 data={tour360Data} />}
+  {isSectionEnabled('amenities') && <Amenities data={amenitiesData} />}
+  {isSectionEnabled('price-unlock') && <PriceUnlock data={priceUnlockData} />}
+  {isSectionEnabled('testimonials') && <Testimonials data={testimonialsData} />}
+</BaseLayout>

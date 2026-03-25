@@ -1,0 +1,180 @@
+---
+export interface Props {
+  data: {
+    headline: string;
+    subtext: string;
+    tourType: 'iframe' | 'image' | 'video';
+    tourUrl: string;
+    tourImage: string;
+    tourVideo: string;
+    videoAutoplay?: boolean;
+    videoMuted?: boolean;
+  };
+}
+
+const { data } = Astro.props;
+const imgSrc = (path: string) => path?.startsWith('http') ? path : `/${path}`;
+
+const isIframe = data.tourType === 'iframe';
+const isVideo = data.tourType === 'video';
+const isImage = data.tourType === 'image';
+---
+
+<section class="py-24 bg-surface" data-dr-section="tour360" id="tour360">
+  <div class="max-w-7xl mx-auto px-8 md:px-12">
+
+    <!-- Section Header -->
+    <div class="mb-14">
+      <p class="text-[10px] tracking-[0.5em] uppercase text-gold mb-4 font-sans">Virtual Experience</p>
+      <h2
+        class="font-serif text-4xl md:text-5xl text-primary font-light mb-4"
+        data-dr-field="headline"
+        data-dr-style="headline"
+      >
+        {data.headline}
+      </h2>
+      <div class="w-10 h-[1px] bg-gold mb-5"></div>
+      <p
+        class="text-muted text-sm leading-relaxed max-w-lg"
+        data-dr-field="subtext"
+        data-dr-style="subtext"
+      >
+        {data.subtext}
+      </p>
+    </div>
+
+    <!-- Tour Container -->
+    <div
+      class="relative w-full overflow-hidden bg-background"
+      style="aspect-ratio: 16/9;"
+      id="tour360-container"
+    >
+      <!-- ═══ Iframe Mode ═══ -->
+      <div
+        data-dr-show-when="tour360.tourType=iframe"
+        style={isIframe ? '' : 'display:none'}
+        class="w-full h-full"
+      >
+        <iframe
+          src={data.tourUrl || 'https://my.matterport.com/show/?m=SxQL3iGyoDo'}
+          class="w-full h-full border-0"
+          allowfullscreen
+          allow="fullscreen; accelerometer; gyroscope; magnetometer"
+          data-dr-field="tourUrl"
+          title="360° Virtual Tour"
+        />
+      </div>
+
+      <!-- ═══ Video Mode ═══ -->
+      <div
+        data-dr-show-when="tour360.tourType=video"
+        style={isVideo ? '' : 'display:none'}
+        class="relative w-full h-full"
+      >
+        <!-- Video Loading Skeleton -->
+        <div
+          id="tour-video-skeleton"
+          class="absolute inset-0 bg-stone-900/20 animate-pulse flex items-center justify-center"
+        >
+          <div class="w-12 h-12 border-4 rounded-full animate-spin" style="border-color: color-mix(in srgb, var(--accent), transparent 70%); border-top-color: var(--accent);"></div>
+        </div>
+
+        <!-- Video Element -->
+        <video
+          src={data.tourVideo || 'defaults/demo-video.mp4'}
+          autoplay={data.videoAutoplay === true}
+          muted={data.videoMuted !== false}
+          class="w-full h-full object-cover opacity-0 transition-opacity duration-500"
+          controls
+          data-dr-field="tourVideo"
+          onloadeddata="this.style.opacity='1'; document.getElementById('tour-video-skeleton').style.display='none';"
+          oncanplay="this.style.opacity='1'; document.getElementById('tour-video-skeleton').style.display='none';"
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <!-- ═══ Image Mode ═══ -->
+      <div
+        data-dr-show-when="tour360.tourType=image"
+        style={isImage ? '' : 'display:none'}
+        class="w-full h-full"
+      >
+        <img
+          src={imgSrc(data.tourImage || 'defaults/default-hero.jpg')}
+          alt="Property View"
+          class="w-full h-full object-cover"
+          data-dr-field="tourImage"
+        />
+      </div>
+
+      <!-- Controls -->
+      <div class="absolute top-4 right-4 flex gap-2 z-10">
+        <button
+          id="fullscreen-btn"
+          class="bg-background/80 backdrop-blur-sm text-primary p-2.5 hover:bg-gold hover:text-background transition-all duration-200"
+          aria-label="Fullscreen"
+          title="Toggle fullscreen"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 360 Badge -->
+      <div class="absolute top-4 left-4 z-10 bg-background/70 backdrop-blur-sm px-3 py-2 flex items-center gap-2">
+        <div class="w-5 h-5 border border-gold rounded-full flex items-center justify-center">
+          <span class="text-gold text-[8px] font-bold leading-none">360</span>
+        </div>
+        <span class="text-[10px] tracking-[0.25em] text-primary uppercase font-sans">Virtual Tour</span>
+      </div>
+    </div>
+
+    <!-- Hint (each line shown/hidden by runtime based on tourType) -->
+    <p class="text-muted text-[11px] tracking-[0.2em] uppercase mt-5 text-center font-sans"
+      data-dr-show-when="tour360.tourType=iframe"
+      style={isIframe ? '' : 'display:none'}>
+      Navigate to explore every corner of the residence
+    </p>
+    <p class="text-muted text-[11px] tracking-[0.2em] uppercase mt-5 text-center font-sans"
+      data-dr-show-when="tour360.tourType=video"
+      style={isVideo ? '' : 'display:none'}>
+      Watch the video tour
+    </p>
+    <p class="text-muted text-[11px] tracking-[0.2em] uppercase mt-5 text-center font-sans"
+      data-dr-show-when="tour360.tourType=image"
+      style={isImage ? '' : 'display:none'}>
+      View the property
+    </p>
+
+  </div>
+</section>
+
+<script>
+(function () {
+  // Fullscreen toggle
+  var btn = document.getElementById('fullscreen-btn');
+  var container = document.getElementById('tour360-container');
+  if (btn && container) {
+    btn.addEventListener('click', function () {
+      if (!document.fullscreenElement) {
+        container.requestFullscreen && container.requestFullscreen();
+      } else {
+        document.exitFullscreen && document.exitFullscreen();
+      }
+    });
+  }
+
+  // Re-init on content update (image src updated by runtime; no complex state to reset)
+  document.addEventListener('dr:content-updated', function (e) {
+    if (e.detail && e.detail.sectionId === 'tour360') {
+      requestAnimationFrame(function () {
+        // Video: reload if src changed
+        var video = document.querySelector('[data-dr-section="tour360"] video');
+        if (video && video.paused) video.load();
+      });
+    }
+  });
+})();
+</script>
